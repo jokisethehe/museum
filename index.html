@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Museum of Us</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Raleway:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #c9a84c;
+            --gold-light: #e8c96a;
+            --gold-dark: #8b6914;
+            --gold-dim: rgba(201,168,76,0.25);
+            --gold-glow: rgba(232,201,106,0.18);
+            --crimson: #6b0a1a;
+            --crimson-deep: #0d0205;
+            --crimson-mid: #2e0810;
+            --cream: #f5ede0;
+            --cream-dim: rgba(245,237,224,0.7);
+            --text-muted: #c4a882;
+            --warm-white: #faf4ec;
+            --ease-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+            --ease-silk: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        *, *::before, *::after {
+            margin: 0; padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        html, body {
+            width: 100%; height: 100%;
+            overflow: hidden;
+            background: var(--crimson-deep);
+            color: var(--cream);
+            font-family: 'Raleway', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            position: fixed; inset: 0;
+        }
+
+        /* ============================================================
+           LANDSCAPE WARNING
+        ============================================================ */
+        #landscape-warning {
+            display: none;
+            position: fixed; inset: 0;
+            background: #0d0205;
+            z-index: 99999;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 1.5rem;
+            padding: 2rem;
+            text-align: center;
+        }
+        #landscape-warning.show { display: flex; }
+        .rotate-icon { font-size: 3.5rem; animation: rotateAnim 2s ease-in-out infinite; }
+        @keyframes rotateAnim { 0%{transform:rotate(0deg)} 40%{transform:rotate(90deg)} 60%{transform:rotate(90deg)} 100%{transform:rotate(0deg)} }
+        .rotate-title { font-family:'Cinzel',serif; font-size:1rem; letter-spacing:.3rem; color:var(--gold); }
+        .rotate-sub { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:.9rem; color:var(--text-muted); line-height:1.6; max-width:240px; }
+        .rotate-bar { width:60px; height:1px; background:linear-gradient(90deg,transparent,var(--gold),transparent); }
+
+        /* ============================================================
+           LOADING OVERLAY
+        ============================================================ */
+        #load-overlay {
+            position: fixed; inset: 0;
+            background: var(--crimson-deep);
+            z-index: 10000;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center; gap: 1.5rem;
+            transition: opacity 0.8s ease;
+        }
+        #load-overlay.gone { opacity: 0; pointer-events: none; }
+        .load-logo { font-family:'Cinzel Decorative',serif; font-size:1rem; letter-spacing:.35rem; color:var(--gold); animation:goldPulse 1.8s ease-in-out infinite; }
+        .load-bar { width:120px; height:1px; background:var(--gold-dim); position:relative; overflow:hidden; }
+        .load-bar::after { content:''; position:absolute; inset-y:0; left:-100%; width:100%; background:linear-gradient(90deg,transparent,var(--gold),transparent); animation:loadSweep 1.4s ease-in-out infinite; }
+        @keyframes loadSweep { to { left: 200%; } }
+        @keyframes goldPulse { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
+
+        /* ============================================================
+           CINEMATIC ENTRANCE OVERLAY
+        ============================================================ */
+        #cinematic-enter {
+            position: fixed; inset: 0;
+            z-index: 800;
+            pointer-events: none;
+            opacity: 0;
+        }
+        #cinematic-enter.active { pointer-events: all; }
+
+        /* Left & right curtains */
+        .curtain-left, .curtain-right {
+            position: absolute; top: 0; bottom: 0;
+            width: 55%;
+            background: linear-gradient(180deg, #1a0308 0%, #0d0205 40%, #1a0308 100%);
+            z-index: 2;
+            transition: transform 1.6s cubic-bezier(0.76, 0, 0.24, 1);
+        }
+        .curtain-left { left: 0; transform: translateX(0); }
+        .curtain-right { right: 0; transform: translateX(0); }
+
+        /* Curtain gold trim */
+        .curtain-left::after {
+            content: '';
+            position: absolute; top: 0; right: 0; bottom: 0;
+            width: 2px;
+            background: linear-gradient(180deg, transparent, var(--gold), var(--gold-light), var(--gold), transparent);
+        }
+        .curtain-right::before {
+            content: '';
+            position: absolute; top: 0; left: 0; bottom: 0;
+            width: 2px;
+            background: linear-gradient(180deg, transparent, var(--gold), var(--gold-light), var(--gold), transparent);
+        }
+
+        #cinematic-enter.open .curtain-left { transform: translateX(-100%); }
+        #cinematic-enter.open .curtain-right { transform: translateX(100%); }
+
+        /* Cinematic bars top/bottom */
+        .cin-bar-top, .cin-bar-bottom {
+            position: absolute; left: 0; right: 0;
+            height: 60px;
+            background: #000;
+            z-index: 3;
+            transition: height 1.2s var(--ease-silk) 0.2s;
+        }
+        .cin-bar-top { top: 0; }
+        .cin-bar-bottom { bottom: 0; }
+        #cinematic-enter.open .cin-bar-top { height: 0; }
+        #cinematic-enter.open .cin-bar-bottom { height: 0; }
+
+        /* Center reveal text */
+        .cin-text {
+            position: absolute; inset: 0;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            z-index: 4;
+            gap: 0.4rem;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        #cinematic-enter.active .cin-text { opacity: 1; }
+        #cinematic-enter.open .cin-text { opacity: 0; transition: opacity 0.4s ease; }
+
+        .cin-label {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(0.55rem, 1.2vw, 0.7rem);
+            letter-spacing: 0.5rem;
+            color: var(--gold-dark);
+            text-transform: uppercase;
+        }
+        .cin-title {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: clamp(1.2rem, 4vw, 2.2rem);
+            letter-spacing: clamp(0.2rem, 1vw, 0.5rem);
+            color: var(--gold-light);
+            text-shadow: 0 0 60px rgba(201,168,76,0.6), 0 0 120px rgba(201,168,76,0.2);
+        }
+        .cin-line {
+            width: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            transition: width 0.8s ease 0.3s;
+            margin: 0.4rem 0;
+        }
+        #cinematic-enter.active .cin-line { width: 200px; }
+
+        /* ============================================================
+           DUST PARTICLE CANVAS
+        ============================================================ */
+        #dust-canvas {
+            position: fixed; inset: 0;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0;
+            transition: opacity 2s ease;
+        }
+        #dust-canvas.visible { opacity: 1; }
+
+        /* ============================================================
+           SPOTLIGHT EFFECT on museum
+        ============================================================ */
+        .spotlight {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            mix-blend-mode: soft-light;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+        .spotlight.sp1 {
+            width: 35vw; height: 70vh;
+            background: radial-gradient(ellipse, rgba(255,245,200,0.12) 0%, transparent 70%);
+            top: -10%; left: 15%;
+            animation: spotSway1 8s ease-in-out infinite;
+        }
+        .spotlight.sp2 {
+            width: 25vw; height: 60vh;
+            background: radial-gradient(ellipse, rgba(255,240,180,0.09) 0%, transparent 70%);
+            top: -5%; right: 20%;
+            animation: spotSway2 11s ease-in-out infinite;
+        }
+        .spotlight.sp3 {
+            width: 30vw; height: 65vh;
+            background: radial-gradient(ellipse, rgba(255,248,210,0.1) 0%, transparent 70%);
+            top: -8%; left: 42%;
+            animation: spotSway3 9.5s ease-in-out infinite;
+        }
+        @keyframes spotSway1 { 0%,100%{transform:translateX(0) scaleX(1)} 50%{transform:translateX(3vw) scaleX(1.05)} }
+        @keyframes spotSway2 { 0%,100%{transform:translateX(0) scaleY(1)} 50%{transform:translateX(-2vw) scaleY(1.08)} }
+        @keyframes spotSway3 { 0%,100%{transform:translateX(0)} 33%{transform:translateX(2vw)} 66%{transform:translateX(-2vw)} }
+
+        #museum-view.active .spotlight { opacity: 1; }
+
+        /* Ambient warm flicker on museum */
+        .ambient-flicker {
+            position: absolute; inset: 0;
+            background: radial-gradient(ellipse 120% 80% at 50% 0%, rgba(180,80,20,0.08) 0%, transparent 60%);
+            pointer-events: none;
+            animation: flicker 3.5s ease-in-out infinite;
+            z-index: 1;
+        }
+        @keyframes flicker {
+            0%,100%{opacity:1} 25%{opacity:0.8} 50%{opacity:1} 62%{opacity:0.85} 75%{opacity:1} 88%{opacity:0.9}
+        }
+
+        /* ============================================================
+           SPLASH SCREEN
+        ============================================================ */
+        #splash {
+            position: fixed; inset: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 50% 30%, #3d0a16 0%, #0d0205 60%),
+                url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23c9a84c' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            z-index: 1000;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            padding: 2rem;
+            transition: opacity 0.9s ease, transform 1.1s var(--ease-out);
+        }
+        #splash.hidden { opacity: 0; transform: translateY(-8px) scale(0.98); pointer-events: none; }
+
+        .splash-top-ornament { display:flex; align-items:center; gap:1rem; margin-bottom:2.5rem; opacity:0; animation:riseIn 1s var(--ease-out) forwards .2s; }
+        .ornament-line { width:50px; height:1px; background:linear-gradient(90deg,transparent,var(--gold)); }
+        .ornament-line.right { background:linear-gradient(90deg,var(--gold),transparent); }
+        .ornament-diamond { width:6px; height:6px; background:var(--gold); transform:rotate(45deg); }
+
+        .splash-title {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: clamp(2rem, 8vw, 3.2rem);
+            letter-spacing: clamp(0.3rem, 2vw, 0.7rem);
+            color: var(--gold-light);
+            text-align: center;
+            line-height: 1.2;
+            opacity: 0; animation: riseIn 1s var(--ease-out) forwards .5s;
+            text-shadow: 0 0 60px rgba(201,168,76,0.4), 0 2px 4px rgba(0,0,0,0.8);
+        }
+        .splash-year {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(0.55rem, 1.5vw, 0.72rem);
+            letter-spacing: 0.6rem;
+            color: var(--gold-dark);
+            margin-top: 0.3rem;
+            opacity: 0; animation: riseIn 1s var(--ease-out) forwards .65s;
+        }
+        .splash-divider { display:flex; align-items:center; gap:.8rem; margin:1.8rem 0; opacity:0; animation:riseIn 1s var(--ease-out) forwards .75s; }
+        .divider-line { flex:1; max-width:80px; height:1px; background:linear-gradient(90deg,transparent,var(--gold-dark)); }
+        .divider-line.right { background:linear-gradient(90deg,var(--gold-dark),transparent); }
+        .divider-icon { color:var(--gold); font-size:.7rem; letter-spacing:.3rem; }
+
+        .splash-subtitle {
+            font-family: 'Cormorant Garamond', serif;
+            font-style: italic;
+            font-size: clamp(0.9rem, 3.5vw, 1.1rem);
+            color: var(--text-muted);
+            text-align: center;
+            line-height: 1.8;
+            max-width: 320px;
+            opacity: 0; animation: riseIn 1s var(--ease-out) forwards 1s;
+            margin-bottom: 3rem;
+        }
+        .splash-subtitle em { color: var(--gold); font-style: normal; }
+
+        .start-btn {
+            font-family: 'Cinzel', serif;
+            font-size: .72rem;
+            letter-spacing: .3rem;
+            text-transform: uppercase;
+            color: var(--gold);
+            background: transparent;
+            border: 1px solid var(--gold-dark);
+            padding: 1rem 3rem;
+            cursor: pointer;
+            opacity: 0; animation: riseIn 1s var(--ease-out) forwards 1.3s;
+            position: relative; overflow: hidden;
+            transition: color .4s ease, border-color .4s ease;
+            min-width: 180px;
+        }
+        .start-btn::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg,var(--gold-dark),var(--gold)); transform:scaleX(0); transform-origin:left; transition:transform .4s var(--ease-out); z-index:0; }
+        .start-btn:active::before, .start-btn:hover::before { transform:scaleX(1); }
+        .start-btn:active, .start-btn:hover { color:var(--crimson-deep); border-color:var(--gold); }
+        .start-btn span { position:relative; z-index:1; }
+
+        @keyframes riseIn { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:translateY(0)} }
+
+        /* ============================================================
+           SCENE 1 — 3D CAROUSEL
+        ============================================================ */
+        #gallery-view {
+            position: fixed; inset: 0;
+            display: grid;
+            grid-template-rows: auto 1fr auto auto;
+            background: radial-gradient(ellipse 100% 70% at 50% 20%, #2e0a14 0%, #0d0205 65%);
+            opacity: 0;
+            transition: opacity .9s ease;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        #gallery-view.active { opacity: 1; pointer-events: all; }
+
+        .gallery-header {
+            padding: .6rem 1.5rem;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid rgba(201,168,76,.12);
+            background: rgba(13,2,5,.5);
+            backdrop-filter: blur(4px);
+            z-index: 20;
+        }
+        .gallery-title { font-family:'Cinzel Decorative',serif; font-size:clamp(.75rem,1.8vw,.95rem); letter-spacing:.25rem; color:var(--gold-light); text-shadow:0 0 20px rgba(201,168,76,.3); }
+
+        .sound-btn { display:flex; align-items:center; gap:.4rem; background:none; border:none; cursor:pointer; color:var(--text-muted); font-family:'Raleway',sans-serif; font-size:.6rem; letter-spacing:.1rem; text-transform:uppercase; transition:color .3s; padding:.4rem; }
+        .sound-btn:active { color:var(--gold); }
+        .sound-icon { width:26px; height:26px; border-radius:50%; border:1px solid var(--gold-dark); display:flex; align-items:center; justify-content:center; font-size:.7rem; color:var(--gold); flex-shrink:0; transition:background .3s, transform .2s; }
+        .sound-btn:active .sound-icon { transform:scale(.9); background:var(--gold-dim); }
+
+        .carousel-zone { display:flex; justify-content:center; align-items:center; perspective:1200px; perspective-origin:50% 50%; overflow:hidden; }
+
+        #carousel { width:clamp(120px,18vh,180px); height:clamp(160px,24vh,240px); position:relative; transform-style:preserve-3d; transition:transform .75s cubic-bezier(.4,0,.2,1); }
+
+        .c-item { position:absolute; inset:0; cursor:pointer; border:3px solid var(--gold-dark); overflow:hidden; background:#180508; transition:border-color .5s ease, filter .5s ease; will-change:transform; opacity:0; box-shadow:0 15px 50px rgba(0,0,0,.95); }
+        .c-item.revealed { animation:cardReveal .7s var(--ease-out) forwards; }
+        @keyframes cardReveal { from{opacity:0;filter:blur(6px) brightness(.3)} to{opacity:1;filter:none} }
+        .c-item.active { border-color:var(--gold); box-shadow:0 20px 70px rgba(0,0,0,.95), 0 0 30px rgba(201,168,76,.2); }
+        .c-item img { width:100%; height:100%; object-fit:cover; filter:brightness(.5) saturate(.7); transition:filter .6s ease; display:block; pointer-events:none; }
+        .c-item.active img { filter:brightness(.85) saturate(1.05); }
+        .c-label { position:absolute; bottom:0; left:0; right:0; background:rgba(252,248,240,.97); padding:.5rem; text-align:center; transform:translateY(100%); transition:transform .45s var(--ease-out); }
+        .c-item.active .c-label { transform:translateY(0); }
+        .c-label-title { font-family:'Cinzel',serif; font-size:clamp(.45rem,1.2vw,.6rem); letter-spacing:.1rem; color:#1a1a1a; text-transform:uppercase; margin-bottom:.1rem; }
+        .c-label-desc { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:clamp(.6rem,1.5vw,.75rem); color:#555; line-height:1.3; }
+
+        .nav-row { display:flex; justify-content:center; align-items:center; gap:clamp(1rem,3vw,2rem); padding:.4rem 1rem; z-index:20; }
+        .nav-btn { font-family:'Cinzel',serif; font-size:clamp(.55rem,1.2vw,.68rem); letter-spacing:.15rem; text-transform:uppercase; color:var(--gold); background:transparent; border:1px solid var(--gold-dark); padding:.55rem 1.5rem; cursor:pointer; transition:background .3s, color .3s, transform .15s; position:relative; overflow:hidden; }
+        .nav-btn::after { content:''; position:absolute; inset:0; background:var(--gold); transform:scaleY(0); transform-origin:bottom; transition:transform .3s var(--ease-out); z-index:0; }
+        .nav-btn:active::after { transform:scaleY(1); }
+        .nav-btn:active { color:var(--crimson-deep); transform:scale(.97); }
+        .nav-btn span { position:relative; z-index:1; }
+
+        .enter-museum-btn { font-family:'Cinzel',serif; font-size:clamp(.55rem,1.2vw,.68rem); letter-spacing:.2rem; text-transform:uppercase; color:var(--crimson-deep); background:linear-gradient(135deg,var(--gold-dark),var(--gold)); border:none; padding:.55rem 1.2rem; cursor:pointer; transition:transform .15s, box-shadow .3s; box-shadow:0 4px 15px rgba(201,168,76,.3); }
+        .enter-museum-btn:active { transform:scale(.97); }
+
+        .dot-row { display:flex; justify-content:center; gap:.4rem; }
+        .dot { width:4px; height:4px; border-radius:50%; background:var(--gold-dark); transition:background .3s, transform .3s; }
+        .dot.active { background:var(--gold); transform:scale(1.4); }
+
+        .quote-footer { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:clamp(.55rem,1.2vw,.72rem); color:rgba(196,168,130,.5); text-align:center; padding:.3rem 1rem .5rem; letter-spacing:.03rem; line-height:1.5; }
+
+        /* ============================================================
+           SCENE 2 — MUSEUM WALL
+        ============================================================ */
+        #museum-view {
+            position: fixed; inset: 0;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1.2s ease;
+            overflow: hidden;
+        }
+        #museum-view.active { opacity: 1; pointer-events: all; }
+
+        .museum-bg {
+            position: absolute; inset: 0;
+            background-image: url('background.jpg');
+            background-size: cover;
+            background-position: center top;
+            z-index: 0;
+        }
+        .museum-bg::after { content:''; position:absolute; inset:0; background:rgba(13,2,5,.15); }
+
+        /* Vignette edges */
+        .museum-vignette {
+            position: absolute; inset: 0;
+            background:
+                radial-gradient(ellipse 90% 90% at 50% 50%, transparent 55%, rgba(0,0,0,0.55) 100%);
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .museum-header {
+            position: absolute; top: 0; left: 0; right: 0;
+            padding: .5rem 1.5rem;
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(13,2,5,.6);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid rgba(201,168,76,.18);
+            z-index: 10;
+        }
+        .museum-header-left { display: flex; flex-direction: column; gap: .1rem; }
+        .museum-header-title { font-family:'Cinzel Decorative',serif; font-size:clamp(.7rem,1.6vw,.9rem); letter-spacing:.25rem; color:var(--gold-light); }
+        .museum-header-sub { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:clamp(.55rem,1.1vw,.68rem); color:var(--gold-dark); letter-spacing:.12rem; }
+
+        .back-btn { font-family:'Cinzel',serif; font-size:.6rem; letter-spacing:.15rem; color:var(--text-muted); background:none; border:1px solid rgba(201,168,76,.25); padding:.35rem .8rem; cursor:pointer; transition:color .3s, border-color .3s; }
+        .back-btn:hover, .back-btn:active { color:var(--gold); border-color:var(--gold); }
+
+        /* ---- WALL FRAMES LAYOUT ---- */
+        .museum-wall {
+            position: absolute;
+            top: 0; bottom: 0;
+            left: 0; right: 0;
+            z-index: 5;
+            display: flex; align-items: center; justify-content: center;
+            padding: 0 2vw;
+            /* Sedikit dorong ke atas agar bingkai tampil di area tembok */
+            padding-top: clamp(35px,6vh,55px);
+            padding-bottom: clamp(60px,18vh,120px);
+        }
+
+        .frames-layout {
+            display: flex; flex-direction: row;
+            align-items: center; justify-content: center;
+            gap: clamp(8px,2.5vw,36px);
+            width: 100%; max-width: 1200px;
+            padding: 0 1vw;
+        }
+
+        .wall-frame {
+            position: relative; flex-shrink: 0;
+            cursor: pointer; overflow: visible;
+            transition: transform .45s var(--ease-bounce), filter .45s ease;
+            filter: drop-shadow(0 8px 25px rgba(0,0,0,.85));
+        }
+
+        /* Gold aura on hover */
+        .wall-frame:hover, .wall-frame:active {
+            transform: scale(1.07) translateY(-6px);
+            filter: drop-shadow(0 18px 40px rgba(201,168,76,.5)) drop-shadow(0 0 15px rgba(201,168,76,.2)) brightness(1.08);
+        }
+
+        .wall-frame img { display:block; width: 100%; object-fit:contain; pointer-events:none; }
+
+        /* Frame entry animation — each frame gets unique rise + fade */
+        .wall-frame { opacity: 0; }
+        .wall-frame.appeared {
+            animation: frameAppear .9s var(--ease-bounce) forwards;
+        }
+        /* Once fully appeared, keep visible and apply glow breath separately */
+        .wall-frame.settled {
+            opacity: 1;
+            transform: translateY(0) scale(1) rotateY(0deg);
+            filter: drop-shadow(0 8px 25px rgba(0,0,0,.85));
+            animation: none !important;
+        }
+        @keyframes frameAppear {
+            0%  { opacity:0; transform:translateY(30px) scale(.8) rotateY(8deg); filter:drop-shadow(0 0 30px rgba(201,168,76,.0)) blur(4px); }
+            60% { filter:drop-shadow(0 0 20px rgba(201,168,76,.35)) blur(0px); }
+            100%{ opacity:1; transform:translateY(0) scale(1) rotateY(0deg); filter:drop-shadow(0 8px 25px rgba(0,0,0,.85)); }
+        }
+
+        /* Breathing glow animation when idle — applied via separate class on settled frames */
+        .wall-frame.glow-pulse {
+            animation: glowBreath 4s ease-in-out infinite !important;
+            opacity: 1;
+        }
+        @keyframes glowBreath {
+            0%,100%{opacity:1; transform:translateY(0) scale(1); filter:drop-shadow(0 8px 25px rgba(0,0,0,.85))}
+            50%{opacity:1; transform:translateY(0) scale(1); filter:drop-shadow(0 8px 25px rgba(0,0,0,.85)) drop-shadow(0 0 18px rgba(201,168,76,.22))}
+        }
+
+        /* ============================================================
+           POSISI BINGKAI — edit margin-top tiap frame untuk naik/turun
+           margin-top: nilai NEGATIF = naik, nilai POSITIF = turun
+        ============================================================ */
+
+        /* BINGKAI 1 — paling kiri */
+        #wf-1 {
+            width: clamp(80px, 11vw, 155px);
+            height: clamp(100px, 14vh, 185px);
+            margin-top: -140px; /* <-- edit ini untuk naik/turun */
+        }
+
+        /* BINGKAI 2 — kedua dari kiri */
+        #wf-2 {
+            width: clamp(75px, 10vw, 140px);
+            height: clamp(90px, 12.5vh, 165px);
+            margin-top: -16px; /* <-- edit ini untuk naik/turun */
+        }
+
+        /* BINGKAI 3 — tengah (hati) */
+        #wf-3 {
+            width: clamp(100px, 14vw, 190px);
+            height: clamp(110px, 13.5vh, 180px);
+            margin-top: -65px;
+            padding-left: 24px;
+        }
+        #wf-3:hover, #wf-3:active { transform: scale(1.07); }
+
+        /* BINGKAI 4 — kedua dari kanan */
+        #wf-4 {
+            width: clamp(75px, 10vw, 140px);
+            height: clamp(90px, 12.5vh, 165px);
+            margin-top: -16px; /* <-- edit ini untuk naik/turun */
+        }
+
+        /* BINGKAI 5 — paling kanan */
+        #wf-5 {
+            width: clamp(80px, 11vw, 155px);
+            height: clamp(100px, 14vh, 185px);
+            margin-top: -140px; /* <-- edit ini untuk naik/turun */
+        }
+
+        /* Candle flicker ornament near frames */
+        .candle-left, .candle-right {
+            position: absolute; bottom: 8%; 
+            z-index: 6;
+            display: flex; flex-direction: column; align-items: center; gap: 2px;
+            opacity: 0; transition: opacity 1s ease 2s;
+        }
+        .candle-left { left: 5%; }
+        .candle-right { right: 5%; }
+        #museum-view.active .candle-left,
+        #museum-view.active .candle-right { opacity: 1; }
+
+        .candle-flame {
+            width: 8px; height: 14px;
+            background: radial-gradient(ellipse at 50% 80%, #ffe066 0%, #ff9500 50%, transparent 100%);
+            border-radius: 50% 50% 30% 30%;
+            animation: candleFlicker 1.8s ease-in-out infinite;
+            filter: blur(1px);
+        }
+        .candle-body { width: 6px; height: 22px; background: linear-gradient(180deg,#fff8e7,#e8d0a0); border-radius: 2px; }
+        .candle-base { width: 12px; height: 3px; background: var(--gold-dark); border-radius: 1px; }
+
+        @keyframes candleFlicker {
+            0%,100%{transform:scaleX(1) scaleY(1) rotate(-2deg);opacity:1}
+            20%{transform:scaleX(.85) scaleY(1.08) rotate(2deg);opacity:.9}
+            40%{transform:scaleX(1.1) scaleY(.9) rotate(-1deg);opacity:1}
+            60%{transform:scaleX(.9) scaleY(1.05) rotate(3deg);opacity:.95}
+            80%{transform:scaleX(1.05) scaleY(.95) rotate(-2deg);opacity:1}
+        }
+
+        /* ============================================================
+           VISITORS SECTION
+        ============================================================ */
+        #museum-visitors { display: none; }
+
+        /* Wall-frame exhibit label */
+        .wall-frame-label {
+            position: absolute; bottom: -26px; left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            pointer-events: none;
+            text-align: center;
+            opacity: 0; transition: opacity .35s ease;
+        }
+        .wfl-num { display:block; font-family:'Cinzel',serif; font-size:.42rem; letter-spacing:.2rem; color:var(--gold-dark); }
+        .wfl-name { display:block; font-family:'Cormorant Garamond',serif; font-style:italic; font-size:.5rem; color:var(--gold); letter-spacing:.08rem; }
+        .wall-frame:hover .wall-frame-label { opacity: 1; }
+
+        /* ============================================================
+           SCENE 3 — DETAIL VIEW (Italia aesthetic)
+        ============================================================ */
+        #detail-view {
+            position: fixed; inset: 0;
+            z-index: 500;
+            display: flex;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .7s ease;
+            overflow: hidden;
+        }
+        #detail-view.active { opacity: 1; pointer-events: all; }
+
+        .detail-bg { position:absolute; inset:0; background-image:url('background.jpg'); background-size:cover; background-position:center top; z-index:0; }
+        .detail-bg::before {
+            content:''; position:absolute; inset:0;
+            background: linear-gradient(to right, rgba(13,2,5,.2) 0%, rgba(13,2,5,.05) 40%, rgba(13,2,5,.55) 100%);
+        }
+        .detail-bg::after {
+            content:''; position:absolute; inset:0;
+            background: radial-gradient(ellipse 100% 100% at 50% 50%, transparent 50%, rgba(0,0,0,.4) 100%);
+        }
+
+        .detail-close { position:absolute; top:.8rem; right:1rem; z-index:10; }
+        .close-btn { width:36px; height:36px; border-radius:50%; background:rgba(13,2,5,.75); border:1px solid rgba(201,168,76,.35); color:var(--gold); font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:transform .3s, background .3s; }
+        .close-btn:active { transform:rotate(90deg) scale(.9); background:rgba(201,168,76,.2); }
+
+        .detail-body {
+            position: relative; z-index: 2;
+            width: 100%; height: 100%;
+            display: flex; flex-direction: row;
+            align-items: center; justify-content: center;
+            gap: clamp(2rem,4vw,5rem);
+            padding: 2.5rem 4rem;
+        }
+
+        .exhibit-frame {
+            flex-shrink: 0; height: 85vh; max-height: 85vh;
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0; transform: translateX(-20px) scale(.95);
+            transition: opacity .7s ease .15s, transform .7s var(--ease-bounce) .15s;
+            filter: drop-shadow(0 20px 50px rgba(0,0,0,.85));
+        }
+        #detail-view.active .exhibit-frame { opacity: 1; transform: translateX(0) scale(1); }
+        .exhibit-frame img { max-height:85vh; max-width:45vw; width:auto; height:auto; object-fit:contain; display:block; }
+
+        /* Detail placard — Italian Museum style */
+        .detail-placard {
+            text-align: left;
+            max-width: 340px;
+            opacity: 0; transform: translateX(20px);
+            transition: opacity .6s ease .4s, transform .6s var(--ease-out) .4s;
+            background: rgba(10,2,5,.72);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(201,168,76,.22);
+            border-top: 3px solid var(--gold);
+            padding: 2rem 2.2rem 2.2rem;
+            position: relative;
+        }
+        .detail-placard::before {
+            content: '';
+            position: absolute; top: -1px; left: 20%; right: 20%; height: 1px;
+            background: var(--gold-light);
+            filter: blur(2px);
+        }
+        #detail-view.active .detail-placard { opacity: 1; transform: translateX(0); }
+
+        .placard-museum-tag {
+            font-family: 'Cinzel', serif;
+            font-size: .48rem;
+            letter-spacing: .4rem;
+            color: var(--gold-dark);
+            text-transform: uppercase;
+            margin-bottom: 1.2rem;
+            display: flex; align-items: center; gap: .5rem;
+        }
+        .placard-museum-tag::after { content:''; flex:1; height:1px; background:var(--gold-dark); opacity:.5; }
+
+        .placard-num {
+            font-family: 'Cinzel', serif;
+            font-size: .55rem;
+            letter-spacing: .3rem;
+            color: var(--gold-dark);
+            margin-bottom: .4rem;
+        }
+
+        .placard-title-it {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: clamp(.95rem,2.2vw,1.45rem);
+            letter-spacing: .06rem;
+            color: var(--gold-light);
+            margin-bottom: .2rem;
+            line-height: 1.25;
+            text-shadow: 0 0 30px rgba(201,168,76,.3);
+        }
+
+        .placard-title-id {
+            font-family: 'Cormorant Garamond', serif;
+            font-style: italic;
+            font-size: clamp(.7rem,1.5vw,.88rem);
+            color: var(--gold-dark);
+            margin-bottom: 1rem;
+            letter-spacing: .04rem;
+        }
+
+        .placard-divider {
+            display: flex; align-items: center; gap: .6rem;
+            margin-bottom: 1rem;
+        }
+        .pd-line { flex:1; height:1px; background:linear-gradient(90deg,var(--gold-dark),transparent); }
+        .pd-diamond { width:5px; height:5px; background:var(--gold); transform:rotate(45deg); flex-shrink:0; }
+
+        .placard-story-it {
+            font-family: 'EB Garamond', serif;
+            font-size: clamp(.8rem,1.7vw,.97rem);
+            color: rgba(245,237,224,.88);
+            line-height: 1.85;
+            margin-bottom: .8rem;
+            font-style: italic;
+        }
+
+        .placard-story-id {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(.7rem,1.4vw,.84rem);
+            color: rgba(196,168,130,.65);
+            line-height: 1.7;
+            border-left: 1px solid var(--gold-dark);
+            padding-left: .8rem;
+        }
+
+        .placard-footer {
+            margin-top: 1.2rem;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .placard-year {
+            font-family: 'Cinzel', serif;
+            font-size: .48rem;
+            letter-spacing: .25rem;
+            color: var(--gold-dark);
+        }
+        .placard-nav {
+            display: flex; gap: .5rem;
+        }
+        .pnav-btn {
+            font-family: 'Cinzel', serif;
+            font-size: .48rem;
+            letter-spacing: .12rem;
+            color: var(--gold-dark);
+            background: none;
+            border: 1px solid rgba(201,168,76,.2);
+            padding: .25rem .6rem;
+            cursor: pointer;
+            transition: color .3s, border-color .3s;
+        }
+        .pnav-btn:hover, .pnav-btn:active { color:var(--gold); border-color:var(--gold); }
+
+        /* Audio */
+        #bg-audio { display: none; }
+
+        /* ============================================================
+           PARTICLE SYSTEM STYLES
+        ============================================================ */
+        .particle-canvas { position:absolute; inset:0; pointer-events:none; z-index:3; }
+
+    </style>
+</head>
+<body>
+
+<!-- LANDSCAPE WARNING -->
+<div id="landscape-warning">
+    <div class="rotate-icon">📱</div>
+    <div class="rotate-bar"></div>
+    <div class="rotate-title">RUOTA IL DISPOSITIVO</div>
+    <div class="rotate-sub">"Museum of Us" è progettato per essere vissuto in modalità landscape.<br><span style="font-size:.75rem;opacity:.7">Putar layar untuk masuk ke galeri.</span></div>
+    <div class="rotate-bar"></div>
+</div>
+
+<!-- Loading -->
+<div id="load-overlay">
+    <div class="load-logo">MUSEUM OF US</div>
+    <div class="load-bar"></div>
+</div>
+
+<!-- Cinematic Enter Transition -->
+<div id="cinematic-enter">
+    <div class="curtain-left"></div>
+    <div class="curtain-right"></div>
+    <div class="cin-bar-top"></div>
+    <div class="cin-bar-bottom"></div>
+    <div class="cin-text">
+        <div class="cin-label">Benvenuti · Selamat Datang</div>
+        <div class="cin-line"></div>
+        <div class="cin-title">THE GALLERY</div>
+        <div class="cin-line"></div>
+    </div>
+</div>
+
+<!-- Dust Particles Canvas -->
+<canvas id="dust-canvas"></canvas>
+
+<!-- Splash -->
+<div id="splash">
+    <div class="splash-top-ornament">
+        <div class="ornament-line"></div>
+        <div class="ornament-diamond"></div>
+        <div class="ornament-line right"></div>
+    </div>
+    <h1 class="splash-title">MUSEUM<br>OF US</h1>
+    <div class="splash-year">MMXXV · MCMLXXXVIII</div>
+    <div class="splash-divider">
+        <div class="divider-line"></div>
+        <div class="divider-icon">✦ ✦ ✦</div>
+        <div class="divider-line right"></div>
+    </div>
+    <p class="splash-subtitle">"Dove ogni cornice custodisce un battito del cuore,<br>e ogni ricordo è un capolavoro."</p>
+    <button class="start-btn" onclick="startMuseum()"><span>Entra · Enter Gallery</span></button>
+</div>
+
+<!-- Scene 1: Gallery / Carousel -->
+<main id="gallery-view">
+    <header class="gallery-header">
+        <h2 class="gallery-title">MUSEUM OF US</h2>
+        <div style="display:flex;align-items:center;gap:1rem;">
+            <button class="sound-btn" onclick="toggleAudio()" id="sound-btn">
+                <div class="sound-icon" id="sound-icon">♪</div>
+                <span id="sound-label">PLAY</span>
+            </button>
+            <button class="enter-museum-btn" onclick="triggerMuseumEntrance()">
+                ENTRA AL MUSEO →
+            </button>
+        </div>
+    </header>
+    <div class="carousel-zone"><div id="carousel"></div></div>
+    <div class="nav-row">
+        <button class="nav-btn" onclick="rotate(-1)"><span>← PREV</span></button>
+        <div class="dot-row" id="dots"></div>
+        <button class="nav-btn" onclick="rotate(1)"><span>NEXT →</span></button>
+    </div>
+    <p class="quote-footer">"Dove ogni cornice custodisce un battito del cuore, e ogni ricordo è un capolavoro."</p>
+</main>
+
+<!-- Scene 2: Museum Wall -->
+<div id="museum-view">
+    <div class="museum-bg"></div>
+    <div class="museum-vignette"></div>
+    <div class="ambient-flicker"></div>
+    <canvas class="particle-canvas" id="museum-particles"></canvas>
+
+    <!-- Spotlights -->
+    <div class="spotlight sp1"></div>
+    <div class="spotlight sp2"></div>
+    <div class="spotlight sp3"></div>
+
+    <!-- Candle ornaments -->
+    <div class="candle-left">
+        <div class="candle-flame"></div>
+        <div class="candle-body"></div>
+        <div class="candle-base"></div>
+    </div>
+    <div class="candle-right">
+        <div class="candle-flame"></div>
+        <div class="candle-body"></div>
+        <div class="candle-base"></div>
+    </div>
+
+    <div class="museum-header">
+        <div class="museum-header-left">
+            <h2 class="museum-header-title">LA GALLERIA</h2>
+            <div class="museum-header-sub">Galleria delle Memorie Preziose · Galeri Kenangan</div>
+        </div>
+        <button class="back-btn" onclick="closeMuseumWall()">← TORNA · Kembali</button>
+    </div>
+
+    <div class="museum-wall">
+        <div class="frames-layout">
+            <div class="wall-frame" id="wf-1" onclick="openDetail(0)">
+                <img src="3.png" alt="Ritratto" onerror="this.style.opacity='0.3'">
+                <div class="wall-frame-label">
+                    <span class="wfl-num">ESIBIZIONE I</span>
+                    <span class="wfl-name">Ritratto di Sé</span>
+                </div>
+            </div>
+            <div class="wall-frame" id="wf-2" onclick="openDetail(1)">
+                <img src="6.png" alt="Dolce Momento" onerror="this.style.opacity='0.3'">
+                <div class="wall-frame-label">
+                    <span class="wfl-num">ESIBIZIONE II</span>
+                    <span class="wfl-name">Dolce Momento</span>
+                </div>
+            </div>
+            <div class="wall-frame" id="wf-3" onclick="openDetail(2)">
+                <img src="4.png" alt="Cornice del Cuore" onerror="this.style.opacity='0.3'">
+                <div class="wall-frame-label">
+                    <span class="wfl-num">ESIBIZIONE III</span>
+                    <span class="wfl-name">Cornice del Cuore</span>
+                </div>
+            </div>
+            <div class="wall-frame" id="wf-4" onclick="openDetail(3)">
+                <img src="5.png" alt="L'Avventura" onerror="this.style.opacity='0.3'">
+                <div class="wall-frame-label">
+                    <span class="wfl-num">ESIBIZIONE IV</span>
+                    <span class="wfl-name">L'Avventura</span>
+                </div>
+            </div>
+            <div class="wall-frame" id="wf-5" onclick="openDetail(4)">
+                <img src="2.png" alt="L'Orizzonte" onerror="this.style.opacity='0.3'">
+                <div class="wall-frame-label">
+                    <span class="wfl-num">ESIBIZIONE V</span>
+                    <span class="wfl-name">L'Orizzonte</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    </div>
+</div>
+
+<!-- Scene 3: Detail View -->
+<div id="detail-view">
+    <div class="detail-bg"></div>
+    <div class="detail-close">
+        <button class="close-btn" onclick="closeDetail()">✕</button>
+    </div>
+    <div class="detail-body">
+        <div class="exhibit-frame">
+            <img id="detail-img" src="" alt="Exhibit">
+        </div>
+        <div class="detail-placard">
+            <div class="placard-museum-tag">Museum of Us · Galleria Permanente</div>
+            <div class="placard-num" id="placard-num">ESIBIZIONE I</div>
+            <h2 class="placard-title-it" id="placard-title-it">Ritratto di Sé</h2>
+            <div class="placard-title-id" id="placard-title-id">Potret Diri</div>
+            <div class="placard-divider">
+                <div class="pd-line"></div>
+                <div class="pd-diamond"></div>
+                <div class="pd-line" style="background:linear-gradient(90deg,transparent,var(--gold-dark));"></div>
+            </div>
+            <p class="placard-story-it" id="placard-story-it">—</p>
+            <p class="placard-story-id" id="placard-story-id">—</p>
+            <div class="placard-footer">
+                <div class="placard-year" id="placard-year">Anno MMXXV</div>
+                <div class="placard-nav">
+                    <button class="pnav-btn" onclick="detailNav(-1)">‹ PREV</button>
+                    <button class="pnav-btn" onclick="detailNav(1)">NEXT ›</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<audio id="bg-audio" loop>
+    <source src="soundtrack.mp3" type="audio/mpeg">
+</audio>
+<audio id="camera-audio" loop>
+    <source src="soundkamera.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+/* ================================================================
+   ASSET NAMING (same folder as index.html):
+   SCENE 1 — Carousel: carousel_1.jpeg … carousel_5.jpeg
+   SCENE 2 — Wall frames: 3.png 6.png 4.png 5.png 2.png
+   BACKGROUND: background.jpg
+   MUSIC: soundtrack.mp3
+================================================================ */
+
+/* ---- EXHIBIT DATA (Italian + Indonesian) ---- */
+const exhibits = [
+    {
+        carouselImg: 'carousel_1.jpeg',
+        wallImg:     '3.png',
+        numIt:  'ESIBIZIONE I',
+        titleIt:'Ritratto di Sé',
+        titleId:'Potret Diri',
+        storyIt:'Tra lo specchio e la luce, il tuo sorriso rivela più di mille parole. Questo ritratto non cattura solo un volto — cattura un momento di verità, di quiete, di bellezza autentica.',
+        storyId:'Di antara cermin dan cahaya, senyummu menceritakan lebih dari seribu kata. Ini bukan sekadar foto — ini sebuah kebenaran yang terpantul.',
+        year:   'Anno MMXXV'
+    },
+    {
+        carouselImg: 'carousel_2.jpeg',
+        wallImg:     '6.png',
+        numIt:  'ESIBIZIONE II',
+        titleIt:'Dolce Momento',
+        titleId:'Manisnya Hari Itu',
+        storyIt:'La dolcezza non si misura solo nel sapore, ma nella gioia dipinta sul viso. Questo è il tempo sospeso tra un desiderio esaudito e la memoria che ne nasce.',
+        storyId:'Manis bukan hanya rasa, tapi sorot mata yang bersinar. Inilah momen ketika kebahagiaan paling sederhana menjadi kenangan paling indah.',
+        year:   'Anno MMXXV'
+    },
+    {
+        carouselImg: 'carousel_3.jpeg',
+        wallImg:     '4.png',
+        numIt:  'ESIBIZIONE III',
+        titleIt:'Cornice del Cuore',
+        titleId:'Bingkai Hati',
+        storyIt:'Due anime incornicate da un solo gesto — il cuore fatto di mani è il linguaggio universale dell\'amore. Qui il tempo si è fermato, e noi siamo rimasti.',
+        storyId:'Dua jiwa dalam satu bingkai hati. Di sinilah waktu berhenti, dan kita memilih untuk tinggal selamanya di dalam kenangan ini.',
+        year:   'Anno MMXXV'
+    },
+    {
+        carouselImg: 'carousel_4.jpeg',
+        wallImg:     '5.png',
+        numIt:  'ESIBIZIONE IV',
+        titleIt:"L'Avventura",
+        titleId:'Petualangan',
+        storyIt:"Ogni passo verso l'ignoto è un pennello sulla tela della vita. Le montagne non sono ostacoli — sono testimoni silenziosi della nostra forza e meraviglia.",
+        storyId:'Setiap langkah menuju alam adalah kuas di atas kanvas kehidupan. Gunung bukan halangan — ia saksi bisu dari keberanian dan keajaiban kita.',
+        year:   'Anno MMXXV'
+    },
+    {
+        carouselImg: 'carousel_5.jpeg',
+        wallImg:     '2.png',
+        numIt:  'ESIBIZIONE V',
+        titleIt:"L'Orizzonte",
+        titleId:'Cakrawala',
+        storyIt:"Dal tetto della città, il mondo si distende ai nostri piedi come una promessa infinita. L'orizzonte non è una fine — è l'inizio di ogni sogno ancora da vivere.",
+        storyId:'Dari atap kota, dunia terbentang seperti janji yang tak berujung. Cakrawala bukan akhir — ia adalah awal dari setiap mimpi yang belum terjadi.',
+        year:   'Anno MMXXV'
+    }
+];
+
+const N = exhibits.length;
+const STEP = 360 / N;
+let cur = 0, rot = 0;
+let detailCur = 0;
+let audioPlaying = false;
+const audio = document.getElementById('bg-audio');
+
+/* ---- DUST PARTICLES ---- */
+const dustCanvas = document.getElementById('dust-canvas');
+const dustCtx = dustCanvas.getContext('2d');
+let dustParticles = [];
+
+function resizeDust() {
+    dustCanvas.width  = window.innerWidth;
+    dustCanvas.height = window.innerHeight;
+}
+resizeDust();
+
+function spawnDust() {
+    dustParticles = [];
+    for (let i = 0; i < 60; i++) {
+        dustParticles.push({
+            x: Math.random() * dustCanvas.width,
+            y: Math.random() * dustCanvas.height,
+            r: Math.random() * 1.2 + 0.3,
+            vx: (Math.random() - 0.5) * 0.18,
+            vy: -Math.random() * 0.25 - 0.05,
+            alpha: Math.random() * 0.4 + 0.05,
+            da: (Math.random() - 0.5) * 0.003,
+        });
+    }
+}
+spawnDust();
+
+function animateDust() {
+    dustCtx.clearRect(0, 0, dustCanvas.width, dustCanvas.height);
+    dustParticles.forEach(p => {
+        p.x += p.vx; p.y += p.vy;
+        p.alpha += p.da;
+        if (p.alpha <= 0.02) p.da = Math.abs(p.da);
+        if (p.alpha >= 0.45) p.da = -Math.abs(p.da);
+        if (p.y < -10) { p.y = dustCanvas.height + 10; p.x = Math.random() * dustCanvas.width; }
+        dustCtx.beginPath();
+        dustCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        dustCtx.fillStyle = `rgba(232,201,106,${p.alpha})`;
+        dustCtx.fill();
+    });
+    requestAnimationFrame(animateDust);
+}
+animateDust();
+
+/* ---- MUSEUM PARTICLES (inside museum view) ---- */
+const mpCanvas = document.getElementById('museum-particles');
+const mpCtx = mpCanvas.getContext('2d');
+let mpParticles = [];
+
+function resizeMp() {
+    mpCanvas.width  = mpCanvas.parentElement.offsetWidth;
+    mpCanvas.height = mpCanvas.parentElement.offsetHeight;
+}
+
+function spawnMpParticles() {
+    resizeMp();
+    mpParticles = [];
+    for (let i = 0; i < 40; i++) {
+        mpParticles.push({
+            x: Math.random() * mpCanvas.width,
+            y: Math.random() * mpCanvas.height,
+            r: Math.random() * 1.5 + 0.4,
+            vx: (Math.random() - 0.5) * 0.12,
+            vy: -Math.random() * 0.18 - 0.04,
+            alpha: Math.random() * 0.3 + 0.05,
+            da: (Math.random() - 0.5) * 0.002,
+        });
+    }
+}
+
+function animateMp() {
+    if (!document.getElementById('museum-view').classList.contains('active')) {
+        requestAnimationFrame(animateMp); return;
+    }
+    mpCtx.clearRect(0, 0, mpCanvas.width, mpCanvas.height);
+    mpParticles.forEach(p => {
+        p.x += p.vx; p.y += p.vy;
+        p.alpha += p.da;
+        if (p.alpha <= 0.02) p.da = Math.abs(p.da);
+        if (p.alpha >= 0.3)  p.da = -Math.abs(p.da);
+        if (p.y < -10) { p.y = mpCanvas.height + 10; p.x = Math.random() * mpCanvas.width; }
+        mpCtx.beginPath();
+        mpCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        mpCtx.fillStyle = `rgba(255,245,200,${p.alpha})`;
+        mpCtx.fill();
+    });
+    requestAnimationFrame(animateMp);
+}
+spawnMpParticles();
+animateMp();
+
+/* ---- ORIENTATION ---- */
+function checkOrientation() {
+    const warn = document.getElementById('landscape-warning');
+    const isPortrait = window.innerHeight > window.innerWidth;
+    warn.classList.toggle('show', isPortrait);
+}
+window.addEventListener('orientationchange', () => setTimeout(checkOrientation, 150));
+window.addEventListener('resize', checkOrientation);
+checkOrientation();
+
+/* ---- CAROUSEL ---- */
+function getRadius() {
+    const cardW = Math.min(window.innerWidth * 0.18, 180);
+    return Math.max((cardW / 2) / Math.sin(Math.PI / N) * 1.15, 180);
+}
+
+function buildCarousel() {
+    const el = document.getElementById('carousel');
+    el.innerHTML = '';
+    const r = getRadius();
+    exhibits.forEach((ex, i) => {
+        const div = document.createElement('div');
+        div.className = 'c-item' + (i === cur ? ' active' : '');
+        div.id = `ci-${i}`;
+        div.style.transform = `rotateY(${i * STEP}deg) translateZ(${r}px)`;
+        div.innerHTML = `
+            <img src="${ex.carouselImg}" alt="${ex.titleIt}" onerror="this.style.opacity='0.3'">
+            <div class="c-label">
+                <div class="c-label-title">${ex.titleIt}</div>
+                <div class="c-label-desc">${ex.titleId}</div>
+            </div>`;
+        div.addEventListener('click', () => openDetail(i));
+        el.appendChild(div);
+    });
+    buildDots();
+}
+
+function buildDots() {
+    const d = document.getElementById('dots');
+    d.innerHTML = '';
+    exhibits.forEach((_, i) => {
+        const dot = document.createElement('div');
+        dot.className = 'dot' + (i === cur ? ' active' : '');
+        dot.id = `dot-${i}`;
+        dot.onclick = () => goTo(i);
+        d.appendChild(dot);
+    });
+}
+
+function revealItems() {
+    for (let i = 0; i < N; i++) {
+        setTimeout(() => {
+            const el = document.getElementById(`ci-${i}`);
+            if (el) el.classList.add('revealed');
+        }, i * 120 + 80);
+    }
+}
+
+function updateCarousel() {
+    const r = getRadius();
+    document.getElementById('carousel').style.transform = `rotateY(${rot}deg)`;
+    document.querySelectorAll('.c-item').forEach((el, i) => {
+        el.style.transform = `rotateY(${i * STEP}deg) translateZ(${r}px)`;
+        el.classList.toggle('active', i === cur);
+    });
+    document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === cur));
+}
+
+function rotate(dir) { rot -= dir * STEP; cur = (cur + dir + N) % N; updateCarousel(); }
+function goTo(index) {
+    if (index === cur) return;
+    const diff = index - cur;
+    const steps = diff > N/2 ? diff - N : diff < -N/2 ? diff + N : diff;
+    rot -= steps * STEP; cur = index; updateCarousel();
+}
+
+/* ---- SCENE TRANSITIONS ---- */
+function startMuseum() {
+    document.getElementById('splash').classList.add('hidden');
+    setTimeout(() => {
+        const gv = document.getElementById('gallery-view');
+        gv.classList.add('active');
+        buildCarousel(); updateCarousel();
+        setTimeout(revealItems, 300);
+        // Show dust
+        document.getElementById('dust-canvas').classList.add('visible');
+        // Auto play audio
+        tryPlayAudio();
+    }, 700);
+}
+
+/* Cinematic entrance into museum wall */
+function triggerMuseumEntrance() {
+    const cin = document.getElementById('cinematic-enter');
+    cin.style.opacity = '1';
+    cin.classList.add('active');
+
+    // After showing curtain text, open the curtains
+    setTimeout(() => {
+        cin.classList.add('open');
+        // Transition gallery → museum behind curtains
+        setTimeout(() => {
+            document.getElementById('gallery-view').classList.remove('active');
+            const mv = document.getElementById('museum-view');
+            mv.classList.add('active');
+            spawnMpParticles();
+            // Play camera ambient sound loop
+            const camAudio = document.getElementById('camera-audio');
+            if (camAudio) {
+                camAudio.volume = 0.45;
+                camAudio.play().catch(() => {});
+            }
+            // Stagger frame appearances
+            const frames = mv.querySelectorAll('.wall-frame');
+            frames.forEach((f, i) => {
+                f.classList.remove('appeared', 'settled', 'glow-pulse');
+                setTimeout(() => {
+                    f.classList.add('appeared');
+                    // After appear animation done, settle it (keep it visible)
+                    setTimeout(() => {
+                        f.classList.remove('appeared');
+                        f.classList.add('settled');
+                        // Then add glow pulse on top
+                        setTimeout(() => {
+                            f.classList.add('glow-pulse');
+                        }, 300);
+                    }, 950);
+                }, i * 180 + 400);
+            });
+        }, 600);
+        // Hide cinematic overlay
+        setTimeout(() => {
+            cin.style.opacity = '0';
+            setTimeout(() => {
+                cin.classList.remove('active','open');
+                cin.style.opacity = '';
+            }, 800);
+        }, 1000);
+    }, 900);
+}
+
+function closeMuseumWall() {
+    document.getElementById('museum-view').classList.remove('active');
+    document.getElementById('gallery-view').classList.add('active');
+    const camAudio = document.getElementById('camera-audio');
+    if (camAudio) { camAudio.pause(); camAudio.currentTime = 0; }
+}
+
+/* ---- AUDIO ---- */
+function tryPlayAudio() {
+    audio.volume = 0.65;
+    audio.play()
+        .then(() => { audioPlaying = true; updateSoundUI(); })
+        .catch(() => { audioPlaying = false; updateSoundUI(); });
+}
+
+function toggleAudio() {
+    if (audioPlaying) {
+        audio.pause(); audioPlaying = false;
+    } else {
+        audio.play().then(() => { audioPlaying = true; updateSoundUI(); }).catch(() => {});
+    }
+    updateSoundUI();
+}
+
+function updateSoundUI() {
+    const lbl  = document.getElementById('sound-label');
+    const icon = document.getElementById('sound-icon');
+    if (!lbl) return;
+    lbl.textContent  = audioPlaying ? 'PAUSA'  : 'PLAY';
+    icon.textContent = audioPlaying ? '‖' : '♪';
+}
+
+/* ---- DETAIL VIEW ---- */
+let currentDetailIdx = 0;
+
+function openDetail(idx) {
+    currentDetailIdx = idx;
+    const ex = exhibits[idx];
+    const dv = document.getElementById('detail-view');
+
+    // Reset transitions for re-entry
+    const ef = document.querySelector('.exhibit-frame');
+    const dp = document.querySelector('.detail-placard');
+    ef.style.transition = 'none'; dp.style.transition = 'none';
+    dv.classList.remove('active');
+
+    requestAnimationFrame(() => {
+        document.getElementById('detail-img').src       = ex.wallImg;
+        document.getElementById('placard-num').textContent     = ex.numIt;
+        document.getElementById('placard-title-it').textContent = ex.titleIt;
+        document.getElementById('placard-title-id').textContent = ex.titleId;
+        document.getElementById('placard-story-it').textContent = ex.storyIt;
+        document.getElementById('placard-story-id').textContent = ex.storyId;
+        document.getElementById('placard-year').textContent    = ex.year;
+
+        requestAnimationFrame(() => {
+            ef.style.transition = ''; dp.style.transition = '';
+            dv.classList.add('active');
+        });
+    });
+}
+
+function detailNav(dir) {
+    currentDetailIdx = (currentDetailIdx + dir + N) % N;
+    openDetail(currentDetailIdx);
+}
+
+function closeDetail() {
+    document.getElementById('detail-view').classList.remove('active');
+}
+
+/* ---- TOUCH SWIPE ---- */
+let tsX = 0, tsY = 0;
+document.getElementById('gallery-view').addEventListener('touchstart', e => { tsX = e.touches[0].clientX; tsY = e.touches[0].clientY; }, { passive: true });
+document.getElementById('gallery-view').addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - tsX;
+    const dy = e.changedTouches[0].clientY - tsY;
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 45) rotate(dx < 0 ? 1 : -1);
+}, { passive: true });
+
+/* ---- KEYBOARD ---- */
+document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowLeft')  rotate(-1);
+    if (e.key === 'ArrowRight') rotate(1);
+    if (e.key === 'Escape') closeDetail();
+});
+
+window.addEventListener('resize', () => {
+    buildCarousel(); updateCarousel();
+    resizeDust(); resizeMp();
+});
+
+window.addEventListener('load', () => {
+    setTimeout(() => document.getElementById('load-overlay').classList.add('gone'), 700);
+});
+</script>
+</body>
+</html>
