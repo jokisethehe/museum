@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -34,20 +34,14 @@
             touch-action: manipulation;
         }
 
-        html {
-            width: 100%;
+        html, body {
+            width: 100%; height: 100%;
+            overflow: hidden;
             background: var(--crimson-deep);
             color: var(--cream);
             font-family: 'Raleway', sans-serif;
             -webkit-font-smoothing: antialiased;
-        }
-        body {
-            width: 100%; min-height: 100%;
-            background: var(--crimson-deep);
-            color: var(--cream);
-            font-family: 'Raleway', sans-serif;
-            -webkit-font-smoothing: antialiased;
-            /* Biarkan body bisa scroll saat di splash */
+            position: fixed; inset: 0;
         }
 
         /* ============================================================
@@ -248,10 +242,7 @@
             z-index: 1000;
             display: flex; flex-direction: column;
             justify-content: center; align-items: center;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-            padding: 2rem 2rem 3rem;
-            gap: 0;
+            padding: 2rem;
             transition: opacity 0.9s ease, transform 1.1s var(--ease-out);
         }
         #splash.hidden { opacity: 0; transform: translateY(-8px) scale(0.98); pointer-events: none; }
@@ -263,7 +254,6 @@
 
         .splash-title {
             font-family: 'Cinzel Decorative', serif;
-            font-size: clamp(2rem, 8vw, 3.2rem);
             letter-spacing: clamp(0.3rem, 2vw, 0.7rem);
             color: var(--gold-light);
             text-align: center;
@@ -410,29 +400,20 @@
             z-index: 2;
         }
 
-        /* museum-header removed — using back-btn-float instead */
-
-        /* Floating back button — no full navbar, stays top-right */
-        .back-btn-float {
-            position: absolute;
-            top: 1rem; right: 1rem;
+        .museum-header {
+            position: absolute; top: 0; left: 0; right: 0;
+            padding: .5rem 1.5rem;
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(13,2,5,0.1);
+            border-bottom: 1px solid rgba(201,168,76,.18);
             z-index: 10;
-            font-family: 'Cinzel', serif;
-            font-size: .6rem;
-            letter-spacing: .15rem;
-            color: var(--text-muted);
-            background: rgba(13,2,5,.55);
-            border: 1px solid rgba(201,168,76,.25);
-            padding: .4rem .9rem;
-            cursor: pointer;
-            backdrop-filter: blur(6px);
-            transition: color .3s, border-color .3s, background .3s;
         }
-        .back-btn-float:hover, .back-btn-float:active {
-            color: var(--gold);
-            border-color: var(--gold);
-            background: rgba(13,2,5,.8);
-        }
+        .museum-header-left { display: flex; flex-direction: column; gap: .1rem; }
+        .museum-header-title { font-family:'Cinzel Decorative',serif; font-size:clamp(.7rem,1.6vw,.9rem); letter-spacing:.25rem; color:var(--gold-light); }
+        .museum-header-sub { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:clamp(.55rem,1.1vw,.68rem); color:var(--gold-dark); letter-spacing:.12rem; }
+
+        .back-btn { font-family:'Cinzel',serif; font-size:.6rem; letter-spacing:.15rem; color:var(--text-muted); background:none; border:1px solid rgba(201,168,76,.25); padding:.35rem .8rem; cursor:pointer; transition:color .3s, border-color .3s; }
+        .back-btn:hover, .back-btn:active { color:var(--gold); border-color:var(--gold); }
 
         /* ---- WALL FRAMES LAYOUT ---- */
         .museum-wall {
@@ -442,9 +423,9 @@
             z-index: 5;
             display: flex; align-items: center; justify-content: center;
             padding: 0 2vw;
-            /* Tanpa navbar — bingkai bisa lebih ke atas, padding kecil saja */
-            padding-top: clamp(20px, 4vh, 40px);
-            padding-bottom: clamp(60px, 20vh, 130px);
+            /* Sedikit dorong ke atas agar bingkai tampil di area tembok */
+            padding-top: clamp(35px,6vh,55px);
+            padding-bottom: clamp(60px,18vh,120px);
         }
 
         .frames-layout {
@@ -468,7 +449,7 @@
             filter: drop-shadow(0 18px 40px rgba(201,168,76,.5)) drop-shadow(0 0 15px rgba(201,168,76,.2)) brightness(1.08);
         }
 
-        .wall-frame img { display:block; width:100%; height:100%; object-fit:contain; pointer-events:none; }
+        .wall-frame img { display:block; width: 100%; object-fit:contain; pointer-events:none; }
 
         /* Frame entry animation — each frame gets unique rise + fade */
         .wall-frame { opacity: 0; }
@@ -507,21 +488,22 @@
         #wf-1 {
             width: clamp(80px, 11vw, 155px);
             height: clamp(100px, 14vh, 185px);
-            margin-top: 0px; /* <-- edit ini untuk naik/turun */
+            margin-top: -140px; /* <-- edit ini untuk naik/turun */
         }
 
         /* BINGKAI 2 — kedua dari kiri */
         #wf-2 {
             width: clamp(75px, 10vw, 140px);
             height: clamp(90px, 12.5vh, 165px);
-            margin-top: 40px; /* <-- edit ini untuk naik/turun */
+            margin-top: -16px; /* <-- edit ini untuk naik/turun */
         }
 
         /* BINGKAI 3 — tengah (hati) */
         #wf-3 {
             width: clamp(100px, 14vw, 190px);
-            height: clamp(95px, 13.5vh, 180px);
-            margin-top: 0px; /* <-- edit ini untuk naik/turun */
+            height: clamp(110px, 13.5vh, 180px);
+            margin-top: -65px;
+            padding-left: 24px;
         }
         #wf-3:hover, #wf-3:active { transform: scale(1.07); }
 
@@ -529,14 +511,14 @@
         #wf-4 {
             width: clamp(75px, 10vw, 140px);
             height: clamp(90px, 12.5vh, 165px);
-            margin-top: 40px; /* <-- edit ini untuk naik/turun */
+            margin-top: -16px; /* <-- edit ini untuk naik/turun */
         }
 
         /* BINGKAI 5 — paling kanan */
         #wf-5 {
             width: clamp(80px, 11vw, 155px);
             height: clamp(100px, 14vh, 185px);
-            margin-top: 0px; /* <-- edit ini untuk naik/turun */
+            margin-top: -140px; /* <-- edit ini untuk naik/turun */
         }
 
         /* Candle flicker ornament near frames */
@@ -752,39 +734,6 @@
         ============================================================ */
         .particle-canvas { position:absolute; inset:0; pointer-events:none; z-index:3; }
 
-        /* ============================================================
-           MOBILE PORTRAIT — small phone fixes
-        ============================================================ */
-        @media (max-width: 480px) and (orientation: portrait) {
-            /* Splash: pastikan tombol bisa ditekan */
-            .start-btn {
-                padding: 1.1rem 2.2rem;
-                font-size: .7rem;
-                min-height: 52px;
-                min-width: 200px;
-            }
-            .splash-subtitle { font-size: 1rem; max-width: 280px; }
-            .splash-title { font-size: clamp(2.2rem, 10vw, 3rem); }
-
-            /* Gallery nav buttons lebih besar di hp kecil */
-            .nav-btn, .enter-museum-btn { padding: .65rem 1.2rem; min-height: 44px; }
-
-            /* Bingkai lebih kecil di layar sempit */
-            #wf-1, #wf-5 { width: clamp(55px, 17vw, 90px); height: clamp(70px, 21vw, 115px); }
-            #wf-2, #wf-4 { width: clamp(50px, 15vw, 85px); height: clamp(65px, 19vw, 105px); }
-            #wf-3        { width: clamp(65px, 20vw, 100px); height: clamp(65px, 19vw, 100px); }
-
-            /* Back button lebih mudah ditekan */
-            .back-btn-float { font-size: .65rem; padding: .55rem 1rem; min-height: 44px; }
-        }
-
-        @media (max-width: 768px) {
-            /* Tombol gallery semua minimal 44px tinggi (Apple HIG) */
-            .nav-btn, .enter-museum-btn, .back-btn-float { min-height: 44px; }
-            /* Gap bingkai lebih rapat di hp */
-            .frames-layout { gap: clamp(5px, 1.8vw, 18px); }
-        }
-
     </style>
 </head>
 <body>
@@ -830,11 +779,6 @@
     </div>
     <h1 class="splash-title">MUSEUM<br>OF US</h1>
     <div class="splash-year">MMXXV · MCMLXXXVIII</div>
-    <div class="splash-divider">
-        <div class="divider-line"></div>
-        <div class="divider-icon">✦ ✦ ✦</div>
-        <div class="divider-line right"></div>
-    </div>
     <p class="splash-subtitle">"Dove ogni cornice custodisce un battito del cuore,<br>e ogni ricordo è un capolavoro."</p>
     <button class="start-btn" onclick="startMuseum()"><span>Entra · Enter Gallery</span></button>
 </div>
@@ -886,8 +830,13 @@
         <div class="candle-base"></div>
     </div>
 
-    <!-- Tombol kembali floating tanpa navbar penuh -->
-    <button class="back-btn-float" onclick="closeMuseumWall()">← KEMBALI</button>
+    <div class="museum-header">
+        <div class="museum-header-left">
+            <h2 class="museum-header-title">LA GALLERIA</h2>
+            <div class="museum-header-sub">Galleria delle Memorie Preziose · Galeri Kenangan</div>
+        </div>
+        <button class="back-btn" onclick="closeMuseumWall()">← TORNA · Kembali</button>
+    </div>
 
     <div class="museum-wall">
         <div class="frames-layout">
@@ -1133,11 +1082,11 @@ function animateMp() {
 spawnMpParticles();
 animateMp();
 
-/* ---- ORIENTATION — portrait diizinkan, warning dihapus ---- */
+/* ---- ORIENTATION ---- */
 function checkOrientation() {
-    // Portrait diizinkan — landscape warning dinonaktifkan
     const warn = document.getElementById('landscape-warning');
-    if (warn) warn.classList.remove('show');
+    const isPortrait = window.innerHeight > window.innerWidth;
+    warn.classList.toggle('show', isPortrait);
 }
 window.addEventListener('orientationchange', () => setTimeout(checkOrientation, 150));
 window.addEventListener('resize', checkOrientation);
