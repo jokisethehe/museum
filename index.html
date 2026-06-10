@@ -258,49 +258,59 @@
             color: var(--gold-light);
             text-align: center;
             line-height: 1.2;
-            opacity: 0; animation: riseIn 1s var(--ease-out) forwards .5s;
-            text-shadow: 0 0 60px rgba(201,168,76,0.4), 0 2px 4px rgba(0,0,0,0.8);
+            opacity: 0;
+            animation: riseIn 1s var(--ease-out) forwards .5s;
+            font-size: 1;
+            font-size: 20px;
         }
         .splash-year {
             font-family: 'Cinzel', serif;
-            font-size: clamp(0.55rem, 1.5vw, 0.72rem);
+            /* font-size: clamp(0.55rem, 1.5vw, 0.72rem); */
             letter-spacing: 0.6rem;
             color: var(--gold-dark);
             margin-top: 0.3rem;
-            opacity: 0; animation: riseIn 1s var(--ease-out) forwards .65s;
+            opacity: 0;
+            animation: riseIn 1s var(--ease-out) forwards .65s;
+            font-size: 10px;
         }
         .splash-divider { display:flex; align-items:center; gap:.8rem; margin:1.8rem 0; opacity:0; animation:riseIn 1s var(--ease-out) forwards .75s; }
         .divider-line { flex:1; max-width:80px; height:1px; background:linear-gradient(90deg,transparent,var(--gold-dark)); }
         .divider-line.right { background:linear-gradient(90deg,var(--gold-dark),transparent); }
         .divider-icon { color:var(--gold); font-size:.7rem; letter-spacing:.3rem; }
-
         .splash-subtitle {
             font-family: 'Cormorant Garamond', serif;
             font-style: italic;
-            font-size: clamp(0.9rem, 3.5vw, 1.1rem);
+            /* font-size: clamp(0.9rem, 3.5vw, 1.1rem); */
             color: var(--text-muted);
             text-align: center;
             line-height: 1.8;
             max-width: 320px;
-            opacity: 0; animation: riseIn 1s var(--ease-out) forwards 1s;
-            margin-bottom: 3rem;
+            opacity: 0;
+            animation: riseIn 1s var(--ease-out) forwards 1s;
+            margin-bottom: 1rem;
         }
         .splash-subtitle em { color: var(--gold); font-style: normal; }
 
         .start-btn {
             font-family: 'Cinzel', serif;
             font-size: .72rem;
-            letter-spacing: .3rem;
+            letter-spacing: 0.2rem;
             text-transform: uppercase;
             color: var(--gold);
             background: transparent;
             border: 1px solid var(--gold-dark);
-            padding: 1rem 3rem;
+            padding: 15px 24px;
             cursor: pointer;
-            opacity: 0; animation: riseIn 1s var(--ease-out) forwards 1.3s;
-            position: relative; overflow: hidden;
+            opacity: 0;
+            animation: riseIn 1s var(--ease-out) forwards 1.3s;
+            position: relative;
+            overflow: hidden;
             transition: color .4s ease, border-color .4s ease;
-            min-width: 180px;
+            min-width: 200px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
         }
         .start-btn::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg,var(--gold-dark),var(--gold)); transform:scaleX(0); transform-origin:left; transition:transform .4s var(--ease-out); z-index:0; }
         .start-btn:active::before, .start-btn:hover::before { transform:scaleX(1); }
@@ -325,10 +335,12 @@
         #gallery-view.active { opacity: 1; pointer-events: all; }
 
         .gallery-header {
-            padding: .6rem 1.5rem;
-            display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid rgba(201,168,76,.12);
-            background: rgba(13,2,5,.5);
+            padding: 0px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(201, 168, 76, .12);
+            background: rgba(13, 2, 5, 0.1);
             backdrop-filter: blur(4px);
             z-index: 20;
         }
@@ -383,9 +395,10 @@
         #museum-view.active { opacity: 1; pointer-events: all; }
 
         .museum-bg {
-            position: absolute; inset: 0;
-            background-image: url('background.jpg');
-            background-size: cover;
+            position: absolute;
+            inset: 0;
+            background-image: url(background.jpg);
+            background-size: contain;
             background-position: center top;
             z-index: 0;
         }
@@ -484,26 +497,22 @@
            margin-top: nilai NEGATIF = naik, nilai POSITIF = turun
         ============================================================ */
 
-        /* BINGKAI 1 — paling kiri */
         #wf-1 {
             width: clamp(80px, 11vw, 155px);
             height: clamp(100px, 14vh, 185px);
-            margin-top: -140px; /* <-- edit ini untuk naik/turun */
+            margin-top: -4rem;
         }
 
-        /* BINGKAI 2 — kedua dari kiri */
         #wf-2 {
             width: clamp(75px, 10vw, 140px);
             height: clamp(90px, 12.5vh, 165px);
-            margin-top: -16px; /* <-- edit ini untuk naik/turun */
+            margin-top: 0rem;
         }
-
-        /* BINGKAI 3 — tengah (hati) */
         #wf-3 {
             width: clamp(100px, 14vw, 190px);
             height: clamp(110px, 13.5vh, 180px);
-            margin-top: -65px;
-            padding-left: 24px;
+            margin-top: -3rem;
+            padding-left: 9px;
         }
         #wf-3:hover, #wf-3:active { transform: scale(1.07); }
 
@@ -511,14 +520,14 @@
         #wf-4 {
             width: clamp(75px, 10vw, 140px);
             height: clamp(90px, 12.5vh, 165px);
-            margin-top: -16px; /* <-- edit ini untuk naik/turun */
+            margin-top: 0rem;
         }
 
         /* BINGKAI 5 — paling kanan */
         #wf-5 {
             width: clamp(80px, 11vw, 155px);
             height: clamp(100px, 14vh, 185px);
-            margin-top: -140px; /* <-- edit ini untuk naik/turun */
+            margin-top: -4rem;
         }
 
         /* Candle flicker ornament near frames */
@@ -817,18 +826,6 @@
     <div class="spotlight sp1"></div>
     <div class="spotlight sp2"></div>
     <div class="spotlight sp3"></div>
-
-    <!-- Candle ornaments -->
-    <div class="candle-left">
-        <div class="candle-flame"></div>
-        <div class="candle-body"></div>
-        <div class="candle-base"></div>
-    </div>
-    <div class="candle-right">
-        <div class="candle-flame"></div>
-        <div class="candle-body"></div>
-        <div class="candle-base"></div>
-    </div>
 
     <div class="museum-header">
         <div class="museum-header-left">
